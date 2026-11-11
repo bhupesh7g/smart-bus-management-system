@@ -1,0 +1,67 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBus | Login</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="auth-body">
+
+  <div class="auth-container">
+    <div class="auth-brand">
+      <div class="auth-logo">🚌</div>
+      <h1>Smart<span>Bus</span></h1>
+      <p>Smart journeys start here.</p>
+    </div>
+
+    <div class="auth-card">
+      <div class="auth-tabs">
+        <button id="loginTab" class="auth-tab active"
+          onclick="showAuth('login')">Login</button>
+        <button id="signupTab" class="auth-tab"
+          onclick="showAuth('signup')">Sign Up</button>
+      </div>
+
+      <form id="authForm">
+        <h2 id="authTitle">Welcome Back!</h2>
+        <p class="muted" id="authSubtitle">Login to continue</p>
+
+        <div id="nameField" class="auth-field hidden">
+          <label>Full Name</label>
+          <input id="fullName" type="text" placeholder="Enter your name">
+        </div>
+
+        <div class="auth-field">
+          <label>Email Address</label>
+         <input id="password"
+       type="password"
+       placeholder="Enter password"
+       minlength="8"
+       required></div>
+
+        <div class="auth-field">
+          <label>Password</label>
+          <input id="password" type="password"
+            placeholder="Enter password" minlength="6" required>
+        </div>
+
+        
+
+        <button class="auth-submit" type="submit" id="authSubmit">
+          Login
+        </button>
+
+        <p id="authMessage" class="auth-message"></p>
+      </form>
+
+      <p class="auth-note">
+        SmartBus Management System · Frontend Demo
+      </p>
+    </div>
+  </div>
+
+  <script src="services/auth.js"></script>
+</body>
+</html>

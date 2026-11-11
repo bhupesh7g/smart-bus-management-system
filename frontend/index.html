@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartBus Management System</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="navbar">
+    <div class="brand">🚌 SmartBus</div>
+    <div class="nav-actions">
+      <span class="status"><i></i> Demo Mode</span>
+      <select id="roleSelect" onchange="switchRole()">
+  <option value="passenger">Passenger</option>
+  <option value="controller">Bus Controller</option>
+</select>
+
+<button onclick="logout()" class="secondary">Logout</button>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- PASSENGER DASHBOARD -->
+    <section id="passengerDashboard">
+      <div class="welcome">
+        <div>
+          <p class="eyebrow">SMART BUS MANAGEMENT</p>
+          <h1>Find your bus, <span>travel smarter.</span></h1>
+          <p class="muted">Check bus timings, seat availability and route details.</p>
+        </div>
+        <div class="bus-emoji">🚌</div>
+      </div>
+
+      <section class="panel search-panel">
+        <h2>Find a bus</h2>
+        <p class="muted">Enter your bus stop to find available buses.</p>
+        <div class="search-row">
+          <input id="stopInput" placeholder="Enter stop (e.g. Meerut, Modipuram)">
+          <button onclick="searchBuses()">Search Buses</button>
+        </div>
+        <p class="hint">Demo stops: Meerut, Modipuram, Begum Bridge, Saket</p>
+      </section>
+
+      <section class="section">
+        <div class="section-heading">
+          <div>
+            <h2>Available buses</h2>
+            <p class="muted" id="resultText">Buses on sample routes</p>
+          </div>
+        </div>
+        <div id="busList" class="bus-grid"></div>
+      </section>
+
+      <section class="panel details-panel" id="busDetails">
+        <div class="empty-state">
+          <div>🚌</div>
+          <h3>Select a bus</h3>
+          <p class="muted">Bus details and tracking information will appear here.</p>
+        </div>
+      </section>
+
+      <section class="panel report-panel">
+        <h2>Report a bus update</h2>
+        <p class="muted">Help other passengers by sharing an update.</p>
+        <div class="report-grid">
+          <select id="reportType">
+            <option value="Delay">Bus is delayed</option>
+            <option value="Seats">Seat availability update</option>
+            <option value="Arrival">Bus has arrived</option>
+            <option value="Other">Other update</option>
+          </select>
+          <input id="reportMessage" placeholder="Write your update...">
+          <button onclick="submitReport()">Submit Report</button>
+        </div>
+        <p id="reportStatus" class="success-message"></p>
+      </section>
+    </section>
+
+    <!-- CONTROLLER DASHBOARD -->
+    <section id="controllerDashboard" class="hidden">
+      <div class="welcome">
+        <div>
+          <p class="eyebrow">CONTROLLER PANEL</p>
+          <h1>Welcome, <span>Bus Controller.</span></h1>
+          <p class="muted">Manage your journey and update bus information.</p>
+        </div>
+        <div class="bus-emoji">🎛️</div>
+      </div>
+
+      <section class="panel">
+        <h2>Journey Management</h2>
+        <div class="controller-grid">
+          <div>
+            <label>Bus Number</label>
+            <input id="controllerBus" value="UP-15-AB-1234">
+          </div>
+          <div>
+            <label>Current Stop</label>
+            <input id="currentStop" value="Meerut">
+          </div>
+          <div>
+            <label>Available Seats</label>
+            <input id="seatCount" type="number" min="0" max="50" value="18">
+          </div>
+        </div>
+        <div class="controller-actions">
+          <button onclick="toggleJourney()" id="journeyButton">Start Journey</button>
+          <button class="secondary" onclick="updateBusInfo()">Update Bus Info</button>
+        </div>
+        <p id="controllerStatus" class="success-message"></p>
+      </section>
+
+      <section class="panel">
+        <h2>Passenger Reports</h2>
+        <p class="muted">Review updates submitted by passengers.</p>
+        <div id="controllerReports">
+          <p class="empty-text">No passenger reports yet.</p>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Controller Instructions</h2>
+        <ul class="instructions">
+          <li>Start the journey when the bus departs.</li>
+          <li>Update the current stop and available seats.</li>
+          <li>Review passenger-submitted reports.</li>
+          <li>In the future, GPS and backend services will sync these updates.</li>
+        </ul>
+      </section>
+    </section>
+
+  </main>
+
+  <footer>
+    SmartBus Management System · Frontend Demo
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
