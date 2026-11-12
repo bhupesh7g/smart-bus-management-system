@@ -1,0 +1,47 @@
+bus_number,route_name,departure_time,total_seats,stop_order,stop_name,arrival_offset_minutes
+DEH-SB-001,ISBT – Clock Tower,07:00,40,1,ISBT Dehradun,0
+DEH-SB-001,ISBT – Clock Tower,07:00,40,2,Niranjanpur,8
+DEH-SB-001,ISBT – Clock Tower,07:00,40,3,Saharanpur Chowk,15
+DEH-SB-001,ISBT – Clock Tower,07:00,40,4,Prince Chowk,22
+DEH-SB-001,ISBT – Clock Tower,07:00,40,5,Dehradun Railway Station,30
+DEH-SB-001,ISBT – Clock Tower,07:00,40,6,Clock Tower,38
+DEH-SB-002,Clock Tower – Rajpur,07:15,40,1,Clock Tower,0
+DEH-SB-002,Clock Tower – Rajpur,07:15,40,2,Survey Chowk,5
+DEH-SB-002,Clock Tower – Rajpur,07:15,40,3,Dilaram Chowk,12
+DEH-SB-002,Clock Tower – Rajpur,07:15,40,4,Jakhan,20
+DEH-SB-002,Clock Tower – Rajpur,07:15,40,5,Pacific Mall,26
+DEH-SB-002,Clock Tower – Rajpur,07:15,40,6,Rajpur,34
+DEH-SB-003,ISBT – Prem Nagar,07:30,35,1,ISBT Dehradun,0
+DEH-SB-003,ISBT – Prem Nagar,07:30,35,2,Patel Nagar,8
+DEH-SB-003,ISBT – Prem Nagar,07:30,35,3,Ballupur Chowk,18
+DEH-SB-003,ISBT – Prem Nagar,07:30,35,4,FRI Main Gate,25
+DEH-SB-003,ISBT – Prem Nagar,07:30,35,5,Prem Nagar,35
+DEH-SB-004,Clock Tower – Clement Town,07:45,35,1,Clock Tower,0
+DEH-SB-004,Clock Tower – Clement Town,07:45,35,2,Gandhi Road,6
+DEH-SB-004,Clock Tower – Clement Town,07:45,35,3,Araghar,14
+DEH-SB-004,Clock Tower – Clement Town,07:45,35,4,Dharampur,21
+DEH-SB-004,Clock Tower – Clement Town,07:45,35,5,Turner Road,29
+DEH-SB-004,Clock Tower – Clement Town,07:45,35,6,Clement Town,38
+DEH-SB-005,ISBT – Sahastradhara,08:00,40,1,ISBT Dehradun,0
+DEH-SB-005,ISBT – Sahastradhara,08:00,40,2,Niranjanpur,8
+DEH-SB-005,ISBT – Sahastradhara,08:00,40,3,Clock Tower,22
+DEH-SB-005,ISBT – Sahastradhara,08:00,40,4,Survey Chowk,28
+DEH-SB-005,ISBT – Sahastradhara,08:00,40,5,IT Park,39
+DEH-SB-005,ISBT – Sahastradhara,08:00,40,6,Sahastradhara Crossing,48
+DEH-SB-005,ISBT – Sahastradhara,08:00,40,7,Sahastradhara,58
+DEH-SB-006,Railway Station – Mussoorie Road,08:15,35,1,Dehradun Railway Station,0
+DEH-SB-006,Railway Station – Mussoorie Road,08:15,35,2,Clock Tower,8
+DEH-SB-006,Railway Station – Mussoorie Road,08:15,35,3,Astley Hall,13
+DEH-SB-006,Railway Station – Mussoorie Road,08:15,35,4,Dilaram Chowk,20
+DEH-SB-006,Railway Station – Mussoorie Road,08:15,35,5,Malsi,31
+DEH-SB-006,Railway Station – Mussoorie Road,08:15,35,6,Mussoorie Diversion,38
+DEH-SB-007,Clock Tower – Raipur,08:30,40,1,Clock Tower,0
+DEH-SB-007,Clock Tower – Raipur,08:30,40,2,Survey Chowk,5
+DEH-SB-007,Clock Tower – Raipur,08:30,40,3,Raipur Road,14
+DEH-SB-007,Clock Tower – Raipur,08:30,40,4,Ladpur,22
+DEH-SB-007,Clock Tower – Raipur,08:30,40,5,Raipur,30
+DEH-SB-008,ISBT – Maldevta,08:45,35,1,ISBT Dehradun,0
+DEH-SB-008,ISBT – Maldevta,08:45,35,2,Dharampur,12
+DEH-SB-008,ISBT – Maldevta,08:45,35,3,Raipur,24
+DEH-SB-008,ISBT – Maldevta,08:45,35,4,Gujrara,35
+DEH-SB-008,ISBT – Maldevta,08:45,35,5,Maldevta,48

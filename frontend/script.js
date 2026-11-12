@@ -1,166 +1,364 @@
-// Sample bus data - later backend se connect hoga
-const buses = [
-  {
-    id: 1,
-    number: "UP-15-AB-1234",
-    route: ["Meerut", "Begum Bridge", "Saket", "Modipuram"],
-    departure: "08:30 AM",
-    eta: "15 min",
-    seats: 18,
-    capacity: 50
-  },
-  {
-    id: 2,
-    number: "UP-15-CD-5678",
-    route: ["Meerut", "Saket", "Modipuram"],
-    departure: "09:00 AM",
-    eta: "25 min",
-    seats: 12,
-    capacity: 45
-  },
-  {
-    id: 3,
-    number: "UP-15-EF-9012",
-    route: ["Meerut", "Begum Bridge", "Modipuram"],
-    departure: "09:30 AM",
-    eta: "35 min",
-    seats: 25,
-    capacity: 50
-  }
-];
 
+const API = "http://127.0.0.1:5000";
+
+let currentUserRole = null;
+let buses = [];
 let selectedBus = null;
+let controllerBuses = [];
 let journeyStarted = false;
 let reports = [];
 
+// Verify user session and role
+async function checkUserRole() {
+  try {
+    const response = await fetch(`${API}/api/auth/me`, {
+      method: "GET",
+      credentials: "include"
+    });
+
+    if (!response.ok) {
+      sessionStorage.removeItem("smartbusRole");
+      sessionStorage.removeItem("smartbusEmail");
+
+      window.location.replace("login.html");
+      return;
+    }
+
+    const data = await response.json();
+
+    currentUserRole = data.user.role;
+
+    if (
+      currentUserRole !== "passenger" &&
+      currentUserRole !== "controller"
+    ) {
+      window.location.replace("login.html");
+      return;
+    }
+
+    sessionStorage.setItem("smartbusRole", currentUserRole);
+    sessionStorage.setItem("smartbusEmail", data.user.email);
+
+    const roleSelect = document.getElementById("roleSelect");
+
+    roleSelect.value = currentUserRole;
+    roleSelect.disabled = true;
+
+    switchRole();
+      if (currentUserRole === "controller") {
+         renderReports();
+         loadControllerBuses();
+}
+  } catch (error) {
+    console.error("Session verification failed:", error);
+    window.location.replace("login.html");
+  }
+}
+
+
+// Display correct dashboard
 function switchRole() {
-  const role = document.getElementById("roleSelect").value;
+  if (!currentUserRole) return;
+
+  const roleSelect = document.getElementById("roleSelect");
+
+  roleSelect.value = currentUserRole;
+  roleSelect.disabled = true;
 
   document.getElementById("passengerDashboard")
-    .classList.toggle("hidden", role !== "passenger");
+    .classList.toggle("hidden", currentUserRole !== "passenger");
 
   document.getElementById("controllerDashboard")
-    .classList.toggle("hidden", role !== "controller");
+    .classList.toggle("hidden", currentUserRole !== "controller");
 
-  if (role === "controller") {
+  if (currentUserRole === "controller") {
     renderReports();
   }
 }
 
+
+// Load buses from backend
+async function loadBuses(search = "") {
+  if (currentUserRole !== "passenger") return;
+
+  try {
+    const response = await fetch(
+      `${API}/api/buses/?search=${encodeURIComponent(search)}`
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Unable to load buses");
+    }
+
+    buses = data.buses.map(bus => ({
+      id: bus.id,
+      number: bus.bus_number,
+      seats: bus.available_seats,
+      capacity: bus.total_seats,
+      location: bus.current_location || "Not updated",
+      journeyStarted: bus.journey_started,
+      route: bus.routes.length
+        ? bus.routes.flatMap(r => [
+            r.start_point,
+            r.end_point
+          ]).filter((v, i, a) => a.indexOf(v) === i)
+        : []
+    }));
+
+    document.getElementById("resultText").textContent =
+      `${buses.length} bus(es) found`;
+
+    renderBuses(buses);
+
+  } catch (error) {
+    document.getElementById("busList").innerHTML =
+      `<div class="panel">Unable to load buses: ${escapeHTML(error.message)}</div>`;
+  }
+}
+
+
+async function loadControllerBuses() {
+  const dropdown = document.getElementById("controllerBus");
+
+  try {
+    dropdown.innerHTML = '<option value="">Loading buses...</option>';
+
+    const response = await fetch(`${API}/api/buses/`, {
+      credentials: "include"
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Unable to load buses");
+    }
+    controllerBuses = data.buses;
+    dropdown.innerHTML = '<option value="">Select Bus Number</option>';
+
+    data.buses.forEach(bus => {
+      const option = document.createElement("option");
+      option.value = bus.bus_number;
+      option.textContent = bus.bus_number;
+      dropdown.appendChild(option);
+    });
+
+    if (data.buses.length === 0) {
+      dropdown.innerHTML = '<option value="">No buses added yet</option>';
+    }
+
+  } catch (error) {
+    dropdown.innerHTML = '<option value="">Unable to load buses</option>';
+    console.error(error);
+  }
+}
+
+// Render bus cards
 function renderBuses(list) {
   const busList = document.getElementById("busList");
+
   busList.innerHTML = "";
 
-  if (list.length === 0) {
+  if (!list.length) {
     busList.innerHTML =
-      '<div class="panel">No buses found for this stop.</div>';
+      '<div class="panel">No buses found.</div>';
     return;
   }
 
   list.forEach(bus => {
     const card = document.createElement("div");
+
     card.className = "bus-card" +
       (selectedBus?.id === bus.id ? " selected" : "");
 
     card.innerHTML = `
       <div class="bus-card-top">
         <div>
-          <div class="bus-number">🚌 ${bus.number}</div>
-          <p class="muted">${bus.route.join(" → ")}</p>
+          <div class="bus-number">
+            🚌 ${escapeHTML(bus.number)}
+          </div>
+          <p class="muted">
+            ${escapeHTML(bus.route.join(" → ") || bus.location)}
+          </p>
         </div>
-        <span class="bus-tag">Available</span>
+
+        <span class="bus-tag">
+          ${bus.seats > 0 ? "Available" : "Full"}
+        </span>
       </div>
+      <p class="muted">
+  Journey Status:
+  <strong>
+    ${bus.journeyStarted ? "Journey Started" : "Not Started"}
+  </strong>
+</p>
+
       <div class="bus-info">
-        <div>
-          <span class="small-label">Departure</span>
-          <strong>${bus.departure}</strong>
-        </div>
         <div>
           <span class="small-label">Available Seats</span>
           <strong>${bus.seats}/${bus.capacity}</strong>
         </div>
+
         <div>
-          <span class="small-label">Estimated Arrival</span>
-          <strong>${bus.eta}</strong>
+          <span class="small-label">Current Location</span>
+          <strong>${escapeHTML(bus.location)}</strong>
         </div>
       </div>
     `;
 
     card.onclick = () => showBusDetails(bus.id);
+
     busList.appendChild(card);
   });
 }
 
-function searchBuses() {
-  const stop = document.getElementById("stopInput")
-    .value.trim().toLowerCase();
 
-  const filtered = stop
-    ? buses.filter(bus =>
-        bus.route.some(s => s.toLowerCase().includes(stop))
-      )
-    : buses;
+// Search buses
+function searchBuses() {
+  if (currentUserRole !== "passenger") return;
+
+  const stop =
+    document.getElementById("stopInput").value.trim();
 
   selectedBus = null;
-  document.getElementById("resultText").textContent =
-    `${filtered.length} bus(es) found`;
 
-  document.getElementById("busDetails").innerHTML = `
-    <div class="empty-state">
-      <div>🔎</div>
-      <h3>Select a bus</h3>
-      <p class="muted">Choose a bus to see its details.</p>
-    </div>
-  `;
-
-  renderBuses(filtered);
+  loadBuses(stop);
 }
 
+
+// Show selected bus details
 function showBusDetails(id) {
+  if (currentUserRole !== "passenger") return;
+
   selectedBus = buses.find(bus => bus.id === id);
 
   const bus = selectedBus;
 
+  if (!bus) return;
+
   document.getElementById("busDetails").innerHTML = `
     <h2>🚌 Bus Details</h2>
-    <h3>${bus.number}</h3>
-    <p class="muted">${bus.route.join(" → ")}</p>
+
+    <h3>${escapeHTML(bus.number)}</h3>
+
+    <p class="muted">
+      ${escapeHTML(bus.route.join(" → ") || "Route not added")}
+    </p>
 
     <div class="details-grid">
+
       <div class="detail-box">
-        <span class="small-label">Departure Time</span>
-        <strong>${bus.departure}</strong>
+        <span class="small-label">Total Seats</span>
+        <strong>${bus.capacity}</strong>
       </div>
-      <div class="detail-box">
-        <span class="small-label">Estimated Arrival</span>
-        <strong>${bus.eta}</strong>
-      </div>
+
       <div class="detail-box">
         <span class="small-label">Available Seats</span>
         <strong>${bus.seats}</strong>
       </div>
-    </div>
 
-    <h3>Live Bus Tracking</h3>
-    <div class="map-demo">
-      <div class="map-pin">🚌</div>
-      <div class="demo-label">
-        Demo location · Real GPS not connected
+      <div class="detail-box">
+        <span class="small-label">Location</span>
+        <strong>${escapeHTML(bus.location)}</strong>
+        <div class="detail-box">
+  <span class="small-label">Journey Status</span>
+  <strong>
+    ${bus.journeyStarted ? "Journey Started" : "Not Started"}
+  </strong>
+</div>
       </div>
+
     </div>
 
-    <p class="muted" style="margin-top:12px">
-      Location: ${bus.route[0]} (sample data)
-    </p>
+    <h3>Book Your Seats</h3>
+
+    <div class="search-row">
+      <input
+        id="bookingSeats"
+        type="number"
+        min="1"
+        value="1"
+        placeholder="Number of seats"
+      >
+
+      <button onclick="bookSeats(${bus.id})">
+        Book Seats
+      </button>
+    </div>
+
+    <p id="bookingStatus" class="success-message"></p>
   `;
 
   renderBuses(buses);
 }
 
+
+// Book seats
+async function bookSeats(busId) {
+  if (currentUserRole !== "passenger") return;
+
+  const seats =
+    Number(document.getElementById("bookingSeats").value);
+
+  const status =
+    document.getElementById("bookingStatus");
+
+  if (!Number.isInteger(seats) || seats <= 0) {
+    status.textContent =
+      "Please enter a valid number of seats.";
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API}/api/bookings/`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        bus_id: busId,
+        seats: seats
+      })
+    });
+
+    const data = await response.json();
+
+    status.textContent = data.message;
+
+    if (response.ok) {
+      await loadBuses(
+        document.getElementById("stopInput").value.trim()
+      );
+
+      const updatedBus =
+        buses.find(b => b.id === busId);
+
+      if (updatedBus) {
+        showBusDetails(busId);
+      }
+
+      document.getElementById("bookingStatus").textContent =
+        data.message;
+    }
+
+  } catch (error) {
+    status.textContent =
+      "Booking failed. Backend check karo.";
+  }
+}
+
+
+// Submit passenger report (currently demo only)
 function submitReport() {
-  const type = document.getElementById("reportType").value;
-  const message = document.getElementById("reportMessage")
-    .value.trim();
+  if (currentUserRole !== "passenger") return;
+
+  const type =
+    document.getElementById("reportType").value;
+
+  const message =
+    document.getElementById("reportMessage").value.trim();
 
   if (!message) {
     alert("Please enter your update first.");
@@ -174,16 +372,22 @@ function submitReport() {
   });
 
   document.getElementById("reportMessage").value = "";
+
   document.getElementById("reportStatus").textContent =
     "Report submitted successfully (demo).";
 
   renderReports();
 }
 
-function renderReports() {
-  const container = document.getElementById("controllerReports");
 
-  if (reports.length === 0) {
+// Display reports (currently demo only)
+function renderReports() {
+  const container =
+    document.getElementById("controllerReports");
+
+  if (!container) return;
+
+  if (!reports.length) {
     container.innerHTML =
       '<p class="empty-text">No passenger reports yet.</p>';
     return;
@@ -198,8 +402,10 @@ function renderReports() {
   `).join("");
 }
 
+
+// Escape HTML
 function escapeHTML(value) {
-  return value.replace(/[&<>"']/g, char => ({
+  return String(value).replace(/[&<>"']/g, char => ({
     "&": "&amp;",
     "<": "&lt;",
     ">": "&gt;",
@@ -208,45 +414,222 @@ function escapeHTML(value) {
   })[char]);
 }
 
-function toggleJourney() {
-  journeyStarted = !journeyStarted;
 
-  document.getElementById("journeyButton").textContent =
-    journeyStarted ? "End Journey" : "Start Journey";
+// Controller journey (demo only)
 
-  document.getElementById("controllerStatus").textContent =
-    journeyStarted
-      ? "Journey started (demo)."
-      : "Journey ended (demo).";
-}
+// Controller journey
+async function toggleJourney() {
+  if (currentUserRole !== "controller") return;
 
-function updateBusInfo() {
-  const seats = Number(document.getElementById("seatCount").value);
-  const stop = document.getElementById("currentStop").value.trim();
-  const busNumber = document.getElementById("controllerBus").value.trim();
+  const busNumber = document.getElementById("controllerBus").value;
+  const status = document.getElementById("controllerStatus");
+  const button = document.getElementById("journeyButton");
 
-  if (!busNumber || !stop || !Number.isInteger(seats) ||
-      seats < 0 || seats > 50) {
-    alert("Please enter valid bus details and seats (0-50).");
+  if (!busNumber) {
+    status.textContent = "Please select a bus first.";
     return;
   }
 
-  document.getElementById("controllerStatus").textContent =
-    `Bus ${busNumber} updated. Stop: ${stop}, Seats: ${seats} (demo).`;
+  const bus = controllerBuses.find(
+    b => b.bus_number === busNumber
+  );
+
+  if (!bus) {
+    status.textContent = "Bus not found.";
+    return;
+  }
+
+  const started = !bus.journey_started;
+
+  try {
+    button.disabled = true;
+    status.textContent = "Updating journey status...";
+
+    const response = await fetch(
+      `${API}/api/buses/${encodeURIComponent(busNumber)}/journey`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ started })
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Journey update failed");
+    }
+
+    bus.journey_started = data.journey_started;
+    button.textContent = started ? "End Journey" : "Start Journey";
+    status.textContent = data.message;
+
+  } catch (error) {
+    status.textContent = error.message;
+  } finally {
+    button.disabled = false;
+  }
+}
+// Controller bus information (demo only)
+
+async function updateBusInfo() {
+  if (currentUserRole !== "controller") return;
+
+  const seats = Number(document.getElementById("seatCount").value);
+  const stop = document.getElementById("currentStop").value.trim();
+  const busNumber = document.getElementById("controllerBus").value.trim();
+  const status = document.getElementById("controllerStatus");
+
+  if (!busNumber || !stop || !Number.isInteger(seats) || seats < 0) {
+    status.textContent = "Please enter valid bus details.";
+    return;
+  }
+
+  try {
+    status.textContent = "Updating bus information...";
+
+    const response = await fetch(
+      `${API}/api/buses/${encodeURIComponent(busNumber)}`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+        available_seats: seats,
+        current_location: stop,
+        departure_time: document.getElementById("departureTime").value
+})
+      }
+    );
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Bus update failed");
+    }
+
+    status.textContent = data.message;
+
+  } catch (error) {
+    status.textContent = error.message;
+  }
 }
 
-// Initial display
-renderBuses(buses);
-// Check selected login role
-const savedRole = sessionStorage.getItem("smartbusRole");
+// Logo
+async function logout() {
+  try {
+    await fetch(`${API}/api/auth/logout`, {
+      method: "POST",
+      credentials: "include"
+    });
+  } catch (error) {
+    console.error("Logout error:", error);
+  } finally {
+    sessionStorage.removeItem("smartbusRole");
+    sessionStorage.removeItem("smartbusEmail");
 
-if (savedRole) {
-  document.getElementById("roleSelect").value = savedRole;
-  switchRole();
+    window.location.replace("login.html");
+  }
 }
 
-function logout() {
-  sessionStorage.removeItem("smartbusRole");
-  sessionStorage.removeItem("smartbusEmail");
-  window.location.href = "login.html";
+// Fill controller form when a bus is selected
+function fillControllerBusInfo() {
+  const busNumber = document.getElementById("controllerBus").value;
+
+  const bus = controllerBuses.find(
+    b => b.bus_number === busNumber
+  );
+
+  const status = document.getElementById("controllerStatus");
+
+  if (!bus) {
+    document.getElementById("seatCount").value = "";
+    document.getElementById("currentStop").value = "";
+    status.textContent = "";
+    return;
+  }
+
+  const seatInput = document.getElementById("seatCount");
+
+    seatInput.value = bus.available_seats;
+    seatInput.max = bus.total_seats;
+ 
+
+  document.getElementById("currentStop").value =
+    bus.current_location || "";
+
+    document.getElementById("departureTime").value =
+    bus.departure_time || "";
+    
+    document.getElementById("journeyButton").textContent =
+    bus.journey_started ? "End Journey" : "Start Journey";
+    status.textContent =
+    "Bus details loaded. You can update the information.";
+}
+
+
+// Start dashboard
+checkUserRole();
+async function addBusStop() {
+    if (currentUserRole !== "controller") return;
+
+    const busNumber = document.getElementById("controllerBus").value;
+    const stopName = document.getElementById("stopName").value.trim();
+    const stopOrder = Number(document.getElementById("stopOrder").value);
+    const arrivalOffset = Number(document.getElementById("arrivalOffset").value);
+    const status = document.getElementById("stopStatus");
+
+    if (
+        !busNumber ||
+        !stopName ||
+        !document.getElementById("stopOrder").value ||
+        !document.getElementById("arrivalOffset").value ||
+        !Number.isInteger(stopOrder) ||
+        !Number.isInteger(arrivalOffset) ||
+        stopOrder < 1 ||
+        arrivalOffset < 0
+    ) {
+        status.textContent = "Please enter valid stop details.";
+        return;
+    }
+
+    try {
+        status.textContent = "Adding stop...";
+
+        const response = await fetch(
+            `${API}/api/buses/${encodeURIComponent(busNumber)}/stops`,
+            {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    stop_name: stopName,
+                    stop_order: stopOrder,
+                    arrival_offset_minutes: arrivalOffset
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || "Unable to add stop");
+        }
+
+        status.textContent = data.message;
+
+        document.getElementById("stopName").value = "";
+        document.getElementById("stopOrder").value = "";
+        document.getElementById("arrivalOffset").value = "";
+
+    } catch (error) {
+        status.textContent = error.message;
+    }
 }

@@ -31,7 +31,8 @@ class Bus(db.Model):
     total_seats = db.Column(db.Integer, nullable=False)
     available_seats = db.Column(db.Integer, nullable=False)
     current_location = db.Column(db.String(200))
-
+    journey_started = db.Column(db.Boolean, default=False, nullable=False)
+    departure_time = db.Column(db.Time, nullable=True)
 
 class Route(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -70,3 +71,11 @@ class Booking(db.Model):
         default=datetime.utcnow,
         nullable=False
     )
+class RouteStop(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    route_id = db.Column(db.Integer, db.ForeignKey("route.id"), nullable=False)
+    stop_name = db.Column(db.String(100), nullable=False)
+    stop_order = db.Column(db.Integer, nullable=False)
+    arrival_offset_minutes = db.Column(db.Integer, nullable=False)
+
+    route = db.relationship("Route", backref="stops")

@@ -94,8 +94,10 @@
         <h2>Journey Management</h2>
         <div class="controller-grid">
           <div>
-            <label>Bus Number</label>
-            <input id="controllerBus" value="UP-15-AB-1234">
+           <label>Bus Number</label>
+          <select id="controllerBus" onchange="fillControllerBusInfo()">
+            <option value="">Loading buses...</option>
+          </select>
           </div>
           <div>
             <label>Current Stop</label>
@@ -104,6 +106,10 @@
           <div>
             <label>Available Seats</label>
             <input id="seatCount" type="number" min="0" max="50" value="18">
+            <div>
+              <label>Departure Time</label>
+              <input id="departureTime" type="time">
+            </div>
           </div>
         </div>
         <div class="controller-actions">
@@ -111,6 +117,32 @@
           <button class="secondary" onclick="updateBusInfo()">Update Bus Info</button>
         </div>
         <p id="controllerStatus" class="success-message"></p>
+        <hr>
+
+<h3>Manage Bus Stops</h3>
+
+<div class="controller-grid">
+    <div>
+        <label>Stop Name</label>
+        <input type="text" id="stopName" placeholder="Enter stop name">
+    </div>
+
+    <div>
+        <label>Stop Order</label>
+        <input type="number" id="stopOrder" min="1" placeholder="1, 2, 3...">
+    </div>
+
+    <div>
+        <label>Arrival After Departure (Minutes)</label>
+        <input type="number" id="arrivalOffset" min="0" placeholder="Example: 30">
+    </div>
+</div>
+
+<div class="controller-actions">
+    <button onclick="addBusStop()">Add Stop</button>
+</div>
+
+<p id="stopStatus" class="success-message"></p>
       </section>
 
       <section class="panel">

@@ -1,4 +1,4 @@
-
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,6 +10,7 @@
 <body class="auth-body">
 
   <div class="auth-container">
+
     <div class="auth-brand">
       <div class="auth-logo">🚌</div>
       <h1>Smart<span>Bus</span></h1>
@@ -17,51 +18,71 @@
     </div>
 
     <div class="auth-card">
+
       <div class="auth-tabs">
-        <button id="loginTab" class="auth-tab active"
-          onclick="showAuth('login')">Login</button>
-        <button id="signupTab" class="auth-tab"
-          onclick="showAuth('signup')">Sign Up</button>
+        <button type="button" id="loginTab"
+          class="auth-tab active" onclick="showAuth('login')">
+          Login
+        </button>
+
+        <button type="button" id="signupTab"
+          class="auth-tab" onclick="showAuth('signup')">
+          Sign Up
+        </button>
       </div>
 
       <form id="authForm">
+
         <h2 id="authTitle">Welcome Back!</h2>
         <p class="muted" id="authSubtitle">Login to continue</p>
 
+        <!-- Login Role Selection -->
+        <div class="auth-field" id="roleField">
+          <label for="loginRole">Login As</label>
+          <select id="loginRole">
+            <option value="passenger">Passenger</option>
+            <option value="controller">Bus Controller</option>
+          </select>
+        </div>
+
+        <!-- Name Field -->
         <div id="nameField" class="auth-field hidden">
-          <label>Full Name</label>
-          <input id="fullName" type="text" placeholder="Enter your name">
+          <label for="fullName">Full Name</label>
+          <input id="fullName" type="text"
+            placeholder="Enter your name">
         </div>
 
+        <!-- Email -->
         <div class="auth-field">
-          <label>Email Address</label>
-         <input id="password"
-       type="password"
-       placeholder="Enter password"
-       minlength="8"
-       required></div>
+          <label for="email">Email Address</label>
+          <input id="email" type="email"
+            placeholder="Enter email" required>
+        </div>
 
+        <!-- Password -->
         <div class="auth-field">
-          <label>Password</label>
+          <label for="password">Password</label>
           <input id="password" type="password"
-            placeholder="Enter password" minlength="6" required>
+            placeholder="Enter password"
+            minlength="8" required>
         </div>
-
-        
 
         <button class="auth-submit" type="submit" id="authSubmit">
           Login
         </button>
 
         <p id="authMessage" class="auth-message"></p>
+
       </form>
 
       <p class="auth-note">
         SmartBus Management System · Frontend Demo
       </p>
+
     </div>
   </div>
 
   <script src="services/auth.js"></script>
+
 </body>
 </html>
